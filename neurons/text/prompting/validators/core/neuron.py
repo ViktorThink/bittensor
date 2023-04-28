@@ -14,7 +14,6 @@
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-from flask import Flask, request
 
 import os
 import time
@@ -144,7 +143,6 @@ class neuron:
         rewards = self.reward_model.reward( flattened_completions_for_reward ).to( self.device )
         bittensor.logging.trace( 'rewards', rewards )
         print("Rewards", rewards)
-        return rewards
 
 
     def inference( 
@@ -179,17 +177,8 @@ class neuron:
         bittensor.logging.info( 'best completion', best_completion)
         return best_completion
 
-app = Flask(__name__)
 
-@app.route("/")
-def hello():
-    roles = request.args.get("roles")
-    messages = request.args.get("messages")
-    successful_completions = request.args.get("successful_completions")
 
-    reward = active_neuron.forward(roles=roles, messages=messages, successful_completions=successful_completions)
-    
-    return str(reward)
 
 if __name__ == '__main__':
     bittensor.logging.info( 'neuron().train()' )
@@ -204,5 +193,4 @@ if __name__ == '__main__':
                              'The 1964 Christmas TV special "Rudolph the Red-Nosed Reindeer" was narrated by Burl Ives. He provided the voice for Sam the Snowman, who serves as the story\'s narrator and also sings some of the classic songs featured in the special, such as "A Holly Jolly Christmas" and "Silver and Gold."',
                              ]
     active_neuron = neuron()
-    
-    app.run(port=21700)
+    active_neuron.forward(roles=roles, messages=messages, successful_completions=successful_completions)
