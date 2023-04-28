@@ -48,7 +48,7 @@ class neuron:
         r""" Checks/validates the config namespace object.
         """
         bt.logging.check_config( config )
-        full_path = os.path.expanduser('{}/{}/{}/netuid{}/{}'.format( config.logging.logging_dir, config.wallet.name, config.wallet.hotkey, config.netuid, config.neuron.name ))
+        full_path = os.path.expanduser('{}/netuid{}/{}'.format( config.logging.logging_dir, config.netuid, config.neuron.name ))
         config.neuron.full_path = os.path.expanduser( full_path )
         config.neuron.reward_path = os.path.expanduser( config.neuron.reward_path )
         if not os.path.exists( config.neuron.full_path ):
