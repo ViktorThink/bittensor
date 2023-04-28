@@ -186,9 +186,9 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    roles = request.args.get("roles")
-    messages = request.args.get("messages")
-    successful_completions = request.args.get("successful_completions")
+    roles = request.args.getlist("roles")
+    messages = request.args.getlist("messages")
+    successful_completions = request.args.getlist("successful_completions")
 
     # Do something with the arguments, if needed
     rewards = active_neuron.forward(roles=roles, messages=messages, successful_completions=successful_completions)
