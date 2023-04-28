@@ -210,4 +210,4 @@ if __name__ == '__main__':
     active_neuron = neuron()
     active_neuron.forward(roles=roles, messages=messages, successful_completions=successful_completions)
 
-    app.run(host="0.0.0.0", port=21700)
+    app.run(host="0.0.0.0", port=8008)
