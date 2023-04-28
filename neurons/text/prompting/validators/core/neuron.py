@@ -122,7 +122,8 @@ class neuron:
             ckpt_state = torch.load( checkpoint )
             self.reward_model.load_state_dict( ckpt_state )
             self.reward_model.eval()
-            self.reward_model.half()
+            if self.device == "cuda":
+                self.reward_model.half()
             self.reward_model.requires_grad_( False )
             self.reward_model.to( self.device )
             bittensor.logging.info('done loading reward model')
@@ -143,6 +144,7 @@ class neuron:
         rewards = self.reward_model.reward( flattened_completions_for_reward ).to( self.device )
         bittensor.logging.trace( 'rewards', rewards )
         print("Rewards", rewards)
+        return rewards
 
 
     def inference( 
@@ -178,7 +180,20 @@ class neuron:
         return best_completion
 
 
+from flask import Flask, request
 
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    roles = request.args.get("roles")
+    messages = request.args.get("messages")
+    successful_completions = request.args.get("successful_completions")
+
+    # Do something with the arguments, if needed
+    rewards = active_neuron.forward(roles=roles, messages=messages, successful_completions=successful_completions)
+    
+    return str(rewards)    
 
 if __name__ == '__main__':
     bittensor.logging.info( 'neuron().train()' )
@@ -194,3 +209,5 @@ if __name__ == '__main__':
                              ]
     active_neuron = neuron()
     active_neuron.forward(roles=roles, messages=messages, successful_completions=successful_completions)
+
+    app.run(port=8008)
