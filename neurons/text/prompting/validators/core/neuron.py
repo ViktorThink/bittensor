@@ -189,7 +189,7 @@ def hello():
 
     reward = active_neuron.forward(roles=roles, messages=messages, successful_completions=successful_completions)
     
-    return reward
+    return str(reward)
 
 if __name__ == '__main__':
     bittensor.logging.info( 'neuron().train()' )
