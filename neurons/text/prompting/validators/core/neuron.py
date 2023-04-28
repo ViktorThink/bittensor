@@ -127,26 +127,6 @@ class neuron:
             self.reward_model.to( self.device )
             bittensor.logging.info('done loading reward model')
 
-        # Init the gating model which learns which miners to select for each query.
-        self.gating_model = GatingModel( metagraph = self.metagraph, config = self.config ).to( self.device )
-        # Denddrite pool for querying the network.
-        # History of forward events.
-        self.history = queue.Queue( maxsize = self.config.neuron.max_history )
-        # Get a list of peers delegating to me
-
-
-        self.load()
-        self.check_weights()
-
-        # Axon set and served for inference requests, unless --neuron.axon_off flag is set.
-        if not self.config.neuron.axon_off:
-            # Build synapse entrypoint.
-            class Synapse( bittensor.TextPromptingSynapse ):
-                def forward( _, messages: List[Dict[str, str]] ) -> str:
-                    return self.inference(
-                        messages = messages,
-                        timeout = self.config.neuron.inference_timeout
-                    )
 
 
     def forward(
