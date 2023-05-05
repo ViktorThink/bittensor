@@ -26,6 +26,7 @@ import random
 import bittensor
 import argparse
 import bittensor as bt
+import traceback
 
 from loguru import logger
 from types import SimpleNamespace
@@ -33,6 +34,7 @@ from typing import List, Optional, Tuple, Dict
 from reward import RewardModel
 from gating import GatingModel
 from transformers import AutoTokenizer
+from datasets import load_dataset
 
 __default_question_prompt__ = '''
 Ask me a random question about anything. Make the question very domain specific. Do not include the answer in the question.
@@ -42,6 +44,9 @@ __default_base_prompt__ = '''
 You are designed to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics.
 '''
 
+__default_follow_up_prompt__ = '''
+Ask a follow up question.
+'''
 class neuron:
     @classmethod
     def check_config( cls, config: 'bt.Config' ):
@@ -75,11 +80,13 @@ class neuron:
         parser.add_argument( '--netuid', type = int, help = 'Prompting network netuid', default = 1 )
         parser.add_argument( '--neuron.name', type = str, help = 'Trials for this miner go in miner.root / (wallet_cold - wallet_hot) / miner.name ', default = 'core_prompting_validator')
         parser.add_argument( '--neuron.base_prompt', type=str, help = 'Prompt injected before a question is completed by miners on the network', default = __default_base_prompt__ )
+        parser.add_argument( '--neuron.follow_up_prompt', type=str, help = 'Follow up prompt that is completed by miners on the network.', default = __default_follow_up_prompt__ )
+        parser.add_argument( '--neuron.reset_bootstrap_prompt_frequency', type=int, help = 'How frequent to use the base follow up question.', default = 3 )
         parser.add_argument( '--neuron.question_prompt', type=str, help = 'Prompt used to generate questions from the network whicha are used to evaluate other miners.', default = __default_question_prompt__ )
         parser.add_argument( '--neuron.reward_model_name', type = str, help = 'GPTRewardModel name', default = 'Dahoas/gpt2-rm-static')
         parser.add_argument( '--neuron.length_timeout_multiplier', type = int, help = 'Base timeout for all requests.', default = 0.01 )
         parser.add_argument( '--neuron.inference_topk', type = int, help = 'At inference time, how many miners to we query and return the top rewarded.', default = 10 )
-        parser.add_argument( '--neuron.training_topk', type = int, help = 'During training time, how many miners to we query for each batch based on scores from gating network.', default = 10 )
+        parser.add_argument( '--neuron.training_topk', type = int, help = 'During training time, how many miners to we query for each batch based on scores from gating network.', default = 50 )
         parser.add_argument( '--neuron.training_timeout', type = int, help = 'Query timeout during training', default = 4 )
         parser.add_argument( '--neuron.inference_timeout', type = int, help = 'Query timeout during inference', default = 10 )
         parser.add_argument( '--neuron.inference_only', action = 'store_true', help = 'If set, training off and only inference will be served via axon.', default = False )
@@ -91,6 +98,8 @@ class neuron:
         parser.add_argument( '--neuron.dont_save_events', action = 'store_true', help = 'If set, we dont save events to a log file.', default = False )
         parser.add_argument( '--neuron.events_retention_size',  type = str,  help = 'Events retention size.', default = "2 GB" )
         parser.add_argument( '--neuron.no_reward_model', action = 'store_true', help = 'If set, we dont load the reward model instead use just the scores.', default = False )
+        parser.add_argument( '--neuron.question_random_sample_uids', action = 'store_true', help = 'If set, random sample uids to get question.', default = False )
+        parser.add_argument( '--neuron.reward_shift', type = int, help = 'The value to shift rewards for calculation.', default = 3 )
 
     @classmethod
     def config ( cls ):
@@ -100,7 +109,7 @@ class neuron:
         cls.add_args( parser )
         return bt.config( parser )
     
-    def __init__( self ):
+    def __init__( self ):      
         self.config = neuron.config()
         self.check_config( self.config )
         bt.logging( config = self.config, logging_dir = self.config.neuron.full_path )
@@ -127,7 +136,6 @@ class neuron:
             self.reward_model.requires_grad_( False )
             self.reward_model.to( self.device )
             bittensor.logging.info('done loading reward model')
-
 
 
     def forward(

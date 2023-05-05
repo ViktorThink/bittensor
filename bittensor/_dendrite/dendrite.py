@@ -90,6 +90,13 @@ class DendriteCall( ABC ):
         self.elapsed = self.end_time - self.start_time
         self.completed = True
 
+    @property
+    def did_timeout( self ) -> bool: return self.return_code == bittensor.proto.ReturnCode.Timeout
+    @property
+    def is_success( self ) -> bool: return self.return_code == bittensor.proto.ReturnCode.Success
+    @property 
+    def did_fail( self ) -> bool: return not self.is_success
+
     def log_outbound(self):
         bittensor.logging.rpc_log(
             axon = False, 
@@ -137,8 +144,6 @@ class Dendrite( ABC, torch.nn.Module ):
                     bittensor keypair used for signing messages.
                 axon (:obj:Union[`bittensor.axon_info`, 'bittensor.axon'], `required`):   
                     bittensor axon object or its info used to create the connection.
-                external_ip (:obj:`str`, `optional`, defaults to None):
-                    external ip of the machine, if None, will use the ip from the endpoint.
                 grpc_options (:obj:`List[Tuple[str,object]]`, `optional`):
                     grpc options to pass through to channel.
         """
@@ -185,7 +190,7 @@ class Dendrite( ABC, torch.nn.Module ):
             dendrite_call.return_code = rpc_error_call.code()
             dendrite_call.return_message = 'GRPC error code: {}, details: {}'.format( rpc_error_call.code(), str(rpc_error_call.details()) )
             bittensor.logging.trace( 'Dendrite.apply() rpc error: {}'.format( dendrite_call.return_message ) )
-                                    
+    
         # Catch timeout errors.
         except asyncio.TimeoutError:
             dendrite_call.return_code = bittensor.proto.ReturnCode.Timeout

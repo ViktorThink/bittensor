@@ -33,22 +33,10 @@ class Synapse( bittensor.TextPromptingSynapse ):
         pass
 
     def forward(self, messages: List[Dict[str, str]]) -> str:
-        unravelled_message = ''
-        roles = []; contents = []
-        for message_dict in messages:
-            message_dict = json.loads( message_dict )
-            item_role = message_dict['role']
-            item_content = message_dict['content']
-            bittensor.logging.success(str(message_dict))
-            roles.append( item_role )
-            contents.append( item_content )
-            if item_role == 'system': unravelled_message += 'system: ' + item_content + '\n'
-            if item_role == 'assistant': unravelled_message += 'assistant: ' + item_content + '\n'
-            if item_role == 'user': unravelled_message += 'user: ' + item_content + '\n'
-        print('unrav', unravelled_message)
-        print ('roles', roles)
-        print ('contents', contents)
         return "hello im a chat bot."
+
+    def multi_forward(self, messages: List[Dict[str, str]]) -> List[ str ]:
+        return ["hello im a chat bot.", "my name is bob" ]
 
 # Create a mock wallet.
 wallet = bittensor.wallet().create_if_non_existent()
@@ -57,12 +45,24 @@ dendrite = bittensor.text_prompting( axon = axon.info(), keypair = wallet.hotkey
 synapse = Synapse( axon = axon )
 axon.start()
 
-bittensor.logging.debug( "Start example")
-forward_call = dendrite.forward(
+# bittensor.logging.debug( "Start example")
+# forward_call = dendrite.forward(
+#     roles = ['system', 'assistant'],
+#     messages = ['you are chat bot', 'what is the whether'],
+#     timeout = 1e6
+# )
+# print ( forward_call )
+# print ( 'success', forward_call.is_success, 'failed', forward_call.did_fail, 'timedout', forward_call.did_timeout )
+# backward_call = forward_call.backward( 1 )
+# print ( backward_call )
+# print ( 'success', backward_call.is_success, 'failed', backward_call.did_fail, 'timedout', backward_call.did_timeout )
+
+
+multi_forward_call = dendrite.multi_forward(
     roles = ['system', 'assistant'],
     messages = ['you are chat bot', 'what is the whether'],
     timeout = 1e6
 )
-print ( forward_call )
-backward_call = forward_call.backward( 1 )
-print ( backward_call )
+print ( multi_forward_call )
+print ( 'success', multi_forward_call.is_success, 'failed', multi_forward_call.did_fail, 'timedout', multi_forward_call.did_timeout )
+print ( 'completions', multi_forward_call.multi_completions )
