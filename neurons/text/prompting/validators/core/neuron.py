@@ -124,8 +124,6 @@ class neuron:
             self.reward_model.eval()
             if self.device == "cuda":
                 self.reward_model.half()
-            else:
-                self.reward_model.to(torch.float32)
             self.reward_model.requires_grad_( False )
             self.reward_model.to( self.device )
             bittensor.logging.info('done loading reward model')
