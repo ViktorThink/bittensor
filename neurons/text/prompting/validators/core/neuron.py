@@ -170,14 +170,7 @@ if __name__ == '__main__':
     bittensor.logging.info( 'neuron().train()' )
     roles = ["user:"]
     messages= ["Who narrated the christmas tv special rudolph the red-nosed reindeer?"]
-    successful_completions= ['The Christmas TV special "Rudolph the Red-Nosed Reindeer" was narrated by actor and comedian, Bill Cosby.',
-                             "1+1 is 2",
-                             "1+1 is a number",
-                             "5",
-                             "1+1 is 5",
-                             'The Christmas TV special "Rudolph the Red-Nosed Reindeer" was narrated by Burl Ives.',
-                             'The 1964 Christmas TV special "Rudolph the Red-Nosed Reindeer" was narrated by Burl Ives. He provided the voice for Sam the Snowman, who serves as the story\'s narrator and also sings some of the classic songs featured in the special, such as "A Holly Jolly Christmas" and "Silver and Gold."',
-                             ]
+    successful_completions= ['The Christmas TV special "Rudolph the Red-Nosed Reindeer" was narrated by actor and comedian, Bill Cosby.']
     active_neuron = neuron()
     active_neuron.forward(roles=roles, messages=messages, successful_completions=successful_completions)
 
