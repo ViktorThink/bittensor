@@ -29,7 +29,7 @@ class RewardModel(nn.Module):
 
     def __init__( self, model_path: str, device: str, config: 'bittensor.config' = None):
         super().__init__()
-        config = AutoConfig.from_pretrained( model_path )
+        config = AutoConfig.from_pretrained( model_path , torch_dtype = torch.float16, low_cpu_mem_usage=True )
         self.model = AutoModelForCausalLM.from_config( config )
         self.config = self.model.config
         # `gpt-neo(x)` models use `hidden_size` attribute names instead of `n_embd``
