@@ -140,7 +140,7 @@ class neuron:
         flattened_message_for_reward = ''
         for role_i, message_i in list(zip(roles, messages)):
             if role_i != 'system': flattened_message_for_reward += message_i.strip() + '\n\n'
-        full_completions_for_reward = [ flattened_message_for_reward + comp.strip() for comp in successful_completions ]
+        full_completions_for_reward = [ 'Question: ' + flattened_message_for_reward + 'Answer: ' + comp.strip() for comp in successful_completions ]
         completions_for_reward = [comp.strip() for comp in successful_completions] 
         rewards = self.reward_model.reward( full_completions_for_reward, completions_for_reward, difference = True, shift = 3).detach().to( self.device )
 
